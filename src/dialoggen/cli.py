@@ -28,7 +28,11 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     def _process(path: Path) -> int:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            print(f"JSON decode error: {exc}", file=sys.stderr)
+            return 4
         try:
             validate(data)
         except ValidationError as exc:
