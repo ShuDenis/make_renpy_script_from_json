@@ -105,7 +105,13 @@ def _layer_to_code(layer: Dict[str, Any], refw: int, refh: int, relative: bool, 
         return f"if {vis_if}:\n    {body}"
     return body
 
-def _hotspot_button(rect: Tuple[int, int, int, int], tooltip: str | None, hover: dict | None, action_code: str, name: str) -> str:
+def _hotspot_button(
+    rect: Tuple[int, int, int, int],
+    tooltip: str | None,
+    hover: dict | None,
+    action_code: str,
+    name: str,
+) -> str:
     x, y, w, h = rect
     # simple semi-transparent overlay + outline
     hover_lines = []
