@@ -6,8 +6,9 @@ INPUT_DIR="$SCRIPT_DIR/input"
 OUTPUT_DIR="$SCRIPT_DIR/output"
 
 mkdir -p "$OUTPUT_DIR"
+cd "$SCRIPT_DIR"
 
 shopt -s nullglob
 for json in "$INPUT_DIR"/*.json; do
-    python -m scenegen.cli --in "$json" --out-dir "$OUTPUT_DIR"
+    python3 -m scenegen.cli --in "$json" --out-dir "$OUTPUT_DIR"
 done
