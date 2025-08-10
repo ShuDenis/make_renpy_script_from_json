@@ -14,6 +14,7 @@ scripts/
 src/
     make_renpy_script/
         __init__.py
+        __main__.py
         converter.py
 tests/
     test_converter.py
@@ -25,7 +26,7 @@ Install the package in editable mode and run the converter:
 
 ```bash
 pip install -e .
-python scripts/run.py path/to/dialogue.json -o output.rpy
+python -m make_renpy_script path/to/dialogue.json -o output.rpy
 ```
 
 Run the test suite with:
