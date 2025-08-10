@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "project": {
+    "language": "ru",
+    "default_character": "narrator",
+    "naming": { "label_prefix": "dlg_", "menu_prefix": "m_" }
+  },
+  "dialog_trees": [
+    {
+      "id": "branching_demo",
+      "title": "Демонстрация ветвления",
+      "entry_node": "n_start",
+      "nodes": [
+        { "id": "n_start", "type": "script",
+          "code": ["points += 1"], "next": "n_gate" },
+        { "id": "n_gate", "type": "if",
+          "branches": [
+            { "condition": "points > 3", "next": "n_bonus" },
+            { "condition": "True",       "next": "n_regular" }
+          ]
+        },
+        { "id": "n_bonus", "type": "say", "character": "e",
+          "text": "Ты набрал много очков!", "voice": "voice/bonus.ogg",
+          "text_tags": ["b"], "next": "n_screen" },
+        { "id": "n_regular", "type": "say", "character": "e",
+          "text": "Продолжай стараться.", "next": "n_screen" },
+        { "id": "n_screen", "type": "screen",
+          "screen": "inventory", "params": { "filter": "quest" },
+          "next": "n_jump" },
+        { "id": "n_jump", "type": "jump", "label": "after_dialog" },
+        { "id": "n_ret", "type": "return" }
+      ]
+    }
+  ]
+}

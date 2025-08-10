@@ -1,0 +1,34 @@
+{
+  "version": "1.0",
+  "project": {
+    "language": "ru",
+    "default_character": "narrator",
+    "naming": { "label_prefix": "dlg_", "menu_prefix": "m_" }
+  },
+  "dialog_trees": [
+    {
+      "id": "day1_intro",
+      "title": "День 1 — вступление",
+      "entry_node": "n_start",
+      "locals": [
+        { "name": "mood", "type": "str", "default": "neutral" }
+      ],
+      "using_characters": ["narrator", "e", "m"],
+      "nodes": [
+        { "id": "n_start", "type": "say", "character": "e",
+          "text": "Привет! Сегодня начнём.", "next": "n_choice_1" },
+        {
+          "id": "n_choice_1", "type": "choice", "prompt": "Как ответить?",
+          "choices": [
+            { "id": "c_ask", "text": "Спросить про курс",
+              "effects": ["interest = 'course'"], "next": "n_after" },
+            { "id": "c_silent", "text": "Промолчать", "next": "n_after" }
+          ]
+        },
+        { "id": "n_after", "type": "say", "character": "m",
+          "text": "Что ж, продолжим.", "next": "n_end" },
+        { "id": "n_end", "type": "return" }
+      ]
+    }
+  ]
+}
