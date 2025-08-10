@@ -126,7 +126,7 @@ screen scene_hall():
         xpos 192 ypos 162 xsize 288 ysize 216
         focus_mask True
         hovered SetField(store, 'scene_tooltip', _(\"В класс\")) unhovered SetField(store, 'scene_tooltip', None)
-        action [SetField(store,'_next_scene','classroom'), Jump('scene__internal__go')]
+        action [Function(renpy.transition, SlideTransition(push_side='left', duration=0.25)), SetField(store,'_next_scene','classroom'), Jump('scene__internal__go')]
         hovered:
             fixed:
                 add Solid('#FFFFFF', xysize (288,26)) alpha 0.12
