@@ -1,4 +1,4 @@
-import argparse, json, pathlib, sys, logging, datetime
+import argparse, json, pathlib, logging, datetime
 from .validator import validate, ValidationError
 from .generator import generate_rpy
 
@@ -22,11 +22,24 @@ def main(argv=None):
     p = argparse.ArgumentParser(prog="scenegen", description="SceneGen: JSON -> Ren'Py scenes generator")
     p.add_argument("--in", dest="infile", required=True, help="Input scenes JSON")
     p.add_argument("--out-dir", dest="outdir", required=True, help="Output directory (Ren'Py /game)")
-    p.add_argument("--fail-on-warning", action="store_true", help="(reserved)")
+    p.add_argument("--fail-on-warning", action="store_true", help="Fail if any warnings are emitted")
     args = p.parse_args(argv)
 
     log_file = _setup_logging()
     logging.info("Log file: %s", log_file)
+    logging.captureWarnings(True)
+    class _WarnHandler(logging.Handler):
+        def __init__(self):
+            super().__init__()
+            self.had_warning = False
+
+        def emit(self, record):
+            if record.levelno >= logging.WARNING:
+                self.had_warning = True
+
+    warn_handler = _WarnHandler()
+    root_logger = logging.getLogger()
+    root_logger.addHandler(warn_handler)
 
     src = pathlib.Path(args.infile)
     outdir = pathlib.Path(args.outdir)
@@ -51,6 +64,10 @@ def main(argv=None):
         path.write_text(content, encoding="utf-8")
         logging.info("Wrote %s", path)
     logging.info("Generated %d files into %s", len(files), outdir)
+    root_logger.removeHandler(warn_handler)
+    if args.fail_on_warning and warn_handler.had_warning:
+        logging.error("Warnings were emitted, failing as requested")
+        return 4
     return 0
 
 if __name__ == "__main__":
