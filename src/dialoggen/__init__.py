@@ -1,12 +1,13 @@
-"""Dialog generation models package."""
+"""DialogGen: models and generators for Ren'Py dialogues."""
 __version__ = "0.1.0"
 
-# Публичный API верхнего уровня
+# Публичный API
+from .generator import generate_rpy  # noqa: F401
 from .expr import eval_expr
 
-# validator мог появиться только в одной из веток — импортируем осторожно
+# validator мог быть только в одной ветке — импортируем осторожно
 try:
-    from .validator import validator  # поправь имя модуля/символа, если нужно
+    from .validator import validator  # поправь путь/имя, если отличается
     _has_validator = True
 except Exception:
     validator = None  # type: ignore[assignment]
@@ -34,8 +35,8 @@ from .models import (
     tree_start_label,
 )
 
-# Собираем единый __all__ без дублей
 __all__ = [
+    "generate_rpy",
     "eval_expr",
     "Project",
     "ProjectConfig",
