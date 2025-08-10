@@ -6,6 +6,13 @@
 
 ## Установка/запуск
 
+### Через виртуальное окружение
+
+```bash
+./setup.sh                       # создаёт .venv и ставит зависимости
+./run.sh --in examples/scenes.json --out-dir /path/to/your/renpy/game
+```
+
 Способ 1 (одним файлом):
 ```bash
 python -m scenegen.cli --in examples/scenes.json --out-dir /path/to/your/renpy/game
