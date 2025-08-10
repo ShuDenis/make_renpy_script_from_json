@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "make-renpy-script-from-json"
+version = "0.1.0"
+description = "Generate a Ren'Py script from JSON"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.scripts]
+make-renpy = "make_renpy_script.__main__:main"
