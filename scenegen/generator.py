@@ -28,6 +28,7 @@ def _transition_code(t: Dict[str, Any] | None) -> str:
     if not t:
         return ""
     ttype = t.get("type", "dissolve")
+    ttype = ttype.lower()
     dur = t.get("duration", 0.2)
     # map a few common names
     mapping = {
