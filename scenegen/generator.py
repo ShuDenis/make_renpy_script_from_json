@@ -146,8 +146,9 @@ def _action_to_code(act: Dict[str, Any]) -> str:
     t = act["type"]
     if t == "go_scene":
         scene_id = act["scene_id"]
-        _transition_code(act.get("transition"))
-        return f"[SetField(store,'_next_scene','{scene_id}'), Jump('scene__internal__go')]"
+        transition = _transition_code(act.get("transition"))
+        action = f"[SetField(store,'_next_scene','{scene_id}'), Jump('scene__internal__go')]"
+        return f"{action} {transition}".rstrip()
     if t == "jump_label":
         label = act["label"]
         return f"Jump('{label}')"
