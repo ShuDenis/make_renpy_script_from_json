@@ -24,7 +24,7 @@ def _bbox_circle(c: Dict[str, float], refw: int, refh: int, relative: bool) -> T
     r = int(round((c["r"] * refw) if relative else c["r"]))  # assume r in X
     return cx - r, cy - r, 2 * r, 2 * r
 
-def _transition_code(t: Dict[str, Any] | None) -> str:
+def _transition_code(t: Dict[str, Any] | None, for_action: bool = False) -> str:
     if not t:
         return ""
     ttype = t.get("type", "dissolve")
@@ -48,8 +48,12 @@ def _transition_code(t: Dict[str, Any] | None) -> str:
                 else ("top" if ttype.endswith("up") else "bottom")
             )
         )
+        if for_action:
+            return f"SlideTransition(push_side='{side}', duration={dur})"
         return f"with SlideTransition(push_side='{side}', duration={dur})"
     klass = mapping.get(ttype, "Dissolve")
+    if for_action:
+        return f"{klass}({dur})"
     return f"with {klass}({dur})"
 
 def _indent(s: str, n: int = 4) -> str:
@@ -146,9 +150,13 @@ def _action_to_code(act: Dict[str, Any]) -> str:
     t = act["type"]
     if t == "go_scene":
         scene_id = act["scene_id"]
-        transition = _transition_code(act.get("transition"))
-        action = f"[SetField(store,'_next_scene','{scene_id}'), Jump('scene__internal__go')]"
-        return f"{action} {transition}".rstrip()
+        transition_obj = _transition_code(act.get("transition"), for_action=True)
+        actions = []
+        if transition_obj:
+            actions.append(f"Function(renpy.transition, {transition_obj})")
+        actions.append(f"SetField(store,'_next_scene','{scene_id}')")
+        actions.append("Jump('scene__internal__go')")
+        return f"[{', '.join(actions)}]"
     if t == "jump_label":
         label = act["label"]
         return f"Jump('{label}')"

@@ -46,5 +46,8 @@ def test_go_scene_transition_applied():
 
     files = generate_rpy(data)
     screen = files["_gen/scene_one.rpy"]
-    assert "action [SetField(store,'_next_scene','two'), Jump('scene__internal__go')] with Fade(0.3)" in screen
+    assert (
+        "action [Function(renpy.transition, Fade(0.3)), SetField(store,'_next_scene','two'), Jump('scene__internal__go')]"
+        in screen
+    )
 
