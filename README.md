@@ -26,12 +26,13 @@ python -m scenegen.cli --in examples/scenes.json --out-dir /path/to/your/renpy/g
 
 ## Пакетная генерация
 
-В репозитории есть скрипт `generate.sh`, который обрабатывает все `.json` из
-директории `input` и кладёт результат в `output`:
+В репозитории есть скрипты `generate.sh` (Linux/macOS) и `generate.bat`
+(Windows), которые обрабатывают все `.json` из директории `input` и кладут
+результат в `output`:
 
 ```bash
 cp examples/scenes.json input/
-./generate.sh
+./generate.sh       # или generate.bat на Windows
 ```
 
 ## Что генерируется
