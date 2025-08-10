@@ -13,8 +13,18 @@ python -m scenegen.cli --in examples/scenes.json --out-dir /path/to/your/renpy/g
 
 Способ 2 (как пакет локально):
 ```bash
-pip install -e .  # (опционально, если добавите setup.py)
-scenegen --in examples/scenes.json --out-dir /path/to/your/renpy/game
+    pip install -e .  # (опционально, если добавите setup.py)
+    scenegen --in examples/scenes.json --out-dir /path/to/your/renpy/game
+```
+
+## Пакетная генерация
+
+В репозитории есть скрипт `generate.sh`, который обрабатывает все `.json` из
+директории `input` и кладёт результат в `output`:
+
+```bash
+cp examples/scenes.json input/
+./generate.sh
 ```
 
 ## Что генерируется
