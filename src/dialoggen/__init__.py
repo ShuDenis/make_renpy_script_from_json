@@ -1,3 +1,6 @@
+
+__all__ = ["validator"]
+__version__ = "0.1.0"
 """Dialog generation models package."""
 
 from .models import (
