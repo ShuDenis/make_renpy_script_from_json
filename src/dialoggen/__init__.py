@@ -5,7 +5,7 @@ __version__ = "0.1.0"
 from .generator import generate_rpy  # noqa: F401
 from .expr import eval_expr
 
-# validator мог быть только в одной ветке — импортируем осторожно
+# validator мог быть только в одной из веток — импортируем осторожно
 try:
     from .validator import validator  # поправь путь/имя, если отличается
     _has_validator = True

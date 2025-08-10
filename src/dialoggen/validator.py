@@ -1,9 +1,20 @@
 from __future__ import annotations
 
+"""
+Dialog project validation utilities.
+
+Использование:
+    from dialoggen.validator import validate, ValidationError
+    proj = validate(data_dict)
+"""
+
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Set
 import warnings
 
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Публичные типы
 
 class ValidationError(Exception):
     """Raised when dialog project validation fails."""
@@ -27,6 +38,9 @@ class DialogProject:
     dialog_trees: List[DialogTree]
 
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Вспомогательные проверки
+
 def _expect_keys(obj: Mapping[str, Any], keys: Iterable[str], ctx: str) -> None:
     for k in keys:
         if k not in obj:
@@ -41,6 +55,9 @@ def _expect_type(val: Any, typ: Any, ctx: str) -> None:
             names = typ.__name__
         raise ValidationError(f"{ctx}: expected type {names}, got {type(val).__name__}")
 
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Основная функция валидации
 
 def validate(data: Mapping[str, Any]) -> DialogProject:
     """Validate dialog project mapping and return structured ``DialogProject``.
@@ -90,11 +107,13 @@ def validate(data: Mapping[str, Any]) -> DialogProject:
         tctx = f"dialog_trees[{idx}]"
         _expect_type(t, Mapping, tctx)
         _expect_keys(t, ["id", "title", "entry_node", "nodes"], tctx)
+
         tid = t["id"]
         _expect_type(tid, str, f"{tctx}.id")
         if tid in seen_tree_ids:
             raise ValidationError(f"{tctx}.id duplicated: {tid}")
         seen_tree_ids.add(tid)
+
         _expect_type(t["title"], str, f"{tctx}.title")
         _expect_type(t["entry_node"], str, f"{tctx}.entry_node")
         _expect_type(t["nodes"], list, f"{tctx}.nodes")
@@ -113,6 +132,7 @@ def validate(data: Mapping[str, Any]) -> DialogProject:
             nctx = f"{tctx}.nodes[{nidx}]"
             _expect_type(n, Mapping, nctx)
             _expect_keys(n, ["id", "type"], nctx)
+
             nid = n["id"]
             _expect_type(nid, str, f"{nctx}.id")
             if nid in node_map:
@@ -125,10 +145,15 @@ def validate(data: Mapping[str, Any]) -> DialogProject:
 
             # type specific checks
             if ntype == "say":
-                _expect_keys(n, ["character", "text", "next"], nctx)
-                _expect_type(n["character"], str, f"{nctx}.character")
+                # character можно опустить, если есть default_character в проекте,
+                # поэтому требуем минимум text/next
+                _expect_keys(n, ["text", "next"], nctx)
                 _expect_type(n["text"], str, f"{nctx}.text")
                 _expect_type(n["next"], str, f"{nctx}.next")
+                if "character" in n:
+                    _expect_type(n["character"], str, f"{nctx}.character")
+                if "text_tags" in n:
+                    _expect_type(n["text_tags"], list, f"{nctx}.text_tags")
             elif ntype == "choice":
                 _expect_keys(n, ["prompt", "choices"], nctx)
                 _expect_type(n["prompt"], str, f"{nctx}.prompt")
@@ -143,6 +168,14 @@ def validate(data: Mapping[str, Any]) -> DialogProject:
                     seen_choice_ids.add(choice["id"])
                     _expect_type(choice["text"], str, f"{cctx}.text")
                     _expect_type(choice["next"], str, f"{cctx}.next")
+                    if "conditions" in choice:
+                        _expect_type(choice["conditions"], list, f"{cctx}.conditions")
+                        for i, cond in enumerate(choice["conditions"]):
+                            _expect_type(cond, str, f"{cctx}.conditions[{i}]")
+                    if "effects" in choice:
+                        _expect_type(choice["effects"], list, f"{cctx}.effects")
+                        for i, eff in enumerate(choice["effects"]):
+                            _expect_type(eff, str, f"{cctx}.effects[{i}]")
             elif ntype == "if":
                 _expect_keys(n, ["branches"], nctx)
                 _expect_type(n["branches"], list, f"{nctx}.branches")
@@ -158,9 +191,16 @@ def validate(data: Mapping[str, Any]) -> DialogProject:
                 _expect_keys(n, ["screen", "next"], nctx)
                 _expect_type(n["screen"], str, f"{nctx}.screen")
                 _expect_type(n["next"], str, f"{nctx}.next")
+                if "params" in n:
+                    _expect_type(n["params"], Mapping, f"{nctx}.params")
             elif ntype == "script":
                 _expect_keys(n, ["code", "next"], nctx)
-                _expect_type(n["code"], str, f"{nctx}.code")
+                # допускаем и строку, и список строк
+                if isinstance(n["code"], list):
+                    for i, line in enumerate(n["code"]):
+                        _expect_type(line, str, f"{nctx}.code[{i}]")
+                else:
+                    _expect_type(n["code"], str, f"{nctx}.code")
                 _expect_type(n["next"], str, f"{nctx}.next")
             elif ntype == "return":
                 pass
@@ -212,9 +252,11 @@ def validate(data: Mapping[str, Any]) -> DialogProject:
             reachable.add(cur)
             node = node_map[cur]
             ntype = node["type"]
+
             def add_edge(target: Optional[str]):
                 if target and target in node_map:
                     stack.append(target)
+
             if "next" in node and isinstance(node["next"], str):
                 add_edge(node["next"])
             if ntype == "choice":
@@ -223,6 +265,7 @@ def validate(data: Mapping[str, Any]) -> DialogProject:
             elif ntype == "if":
                 for br in node["branches"]:
                     add_edge(br.get("next"))
+
         dangling = set(node_map.keys()) - reachable
         if dangling:
             warnings.warn(
@@ -242,3 +285,6 @@ def validate(data: Mapping[str, Any]) -> DialogProject:
         )
 
     return DialogProject(version=data["version"], project=project, dialog_trees=trees)
+
+
+__all__ = ["validate", "ValidationError", "DialogProject", "DialogTree"]

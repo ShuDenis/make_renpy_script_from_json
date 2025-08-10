@@ -1,9 +1,9 @@
+"""Wrapper for dialog generation functionality."""
 from __future__ import annotations
 
 import json
 from pathlib import Path
 from typing import Any, Dict, List
-
 
 # Helper functions
 
@@ -13,12 +13,7 @@ def _quote(s: str) -> str:
 
 
 def _apply_text_tags(text: str, tags: List[str] | None) -> str:
-    """Wrap ``text`` with Ren'Py text tags provided in ``tags``.
-
-    Tags are specified either as simple names ("b", "i") or as
-    ``name=value`` pairs ("color=#fff").  They are nested in the order they
-    appear in the list.
-    """
+    """Wrap ``text`` with Ren'Py text tags provided in ``tags``."""
     if not tags:
         return text
     open_parts: List[str] = []
@@ -178,3 +173,8 @@ def generate_rpy(data: Dict[str, Any]) -> Dict[Path, str]:
         content = "\n".join(lines).rstrip() + "\n"
         files[Path(f"_gen/dialogs_{tid}.rpy")] = content
     return files
+
+# Backwards-compat: алиас, который ожидала другая ветка
+generate = generate_rpy
+
+__all__ = ["generate_rpy", "generate"]
