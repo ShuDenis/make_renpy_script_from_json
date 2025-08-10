@@ -27,18 +27,29 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Input not found: {src}", file=sys.stderr)
         return 2
 
-    data = json.loads(src.read_text(encoding="utf-8"))
-    try:
-        validate(data)
-    except ValidationError as exc:
-        print(f"Validation error: {exc}", file=sys.stderr)
-        return 3
+    def _process(path: Path) -> int:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        try:
+            validate(data)
+        except ValidationError as exc:
+            print(f"Validation error: {exc}", file=sys.stderr)
+            return 3
+        files = generate(data)
+        for rel, content in files.items():
+            out_path = outdir / rel
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(content, encoding="utf-8")
+        return 0
 
-    files = generate(data)
-    for rel, content in files.items():
-        path = outdir / rel
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content, encoding="utf-8")
+    if src.is_dir():
+        for json_file in src.glob("*.json"):
+            code = _process(json_file)
+            if code:
+                return code
+    else:
+        code = _process(src)
+        if code:
+            return code
 
     return 0
 
