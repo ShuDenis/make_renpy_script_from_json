@@ -19,7 +19,7 @@ def json_to_renpy(data: Mapping[str, Any]) -> str:
         speaker = entry.get("speaker", "")
         text = entry.get("text", "")
         if speaker:
-            lines.append(f'{speaker} "{text}"')
+            lines.append(f"{speaker} {json.dumps(text)}")
         else:
             lines.append(text)
     return "\n".join(lines) + ("\n" if lines else "")
