@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable, Mapping, Any
+from typing import Mapping, Any
 import json
 
 
@@ -13,13 +13,13 @@ def json_to_renpy(data: Mapping[str, Any]) -> str:
     The input mapping is expected to have a ``dialogues`` key with an
     iterable of dictionaries containing ``speaker`` and ``text`` keys.
     """
-    lines: Iterable[str] = []
+    lines: list[str] = []
     dialogues = data.get("dialogues", [])
     for entry in dialogues:
         speaker = entry.get("speaker", "")
         text = entry.get("text", "")
         if speaker:
-            lines.append(f"{speaker} \"{text}\"")
+            lines.append(f'{speaker} "{text}"')
         else:
             lines.append(text)
     return "\n".join(lines) + ("\n" if lines else "")
