@@ -207,7 +207,7 @@ def generate_rpy(data: Dict[str, Any]) -> Dict[str, str]:
             return
         $ _sc = _next_scene
         $ _next_scene = None
-        jump expression f"show_{_sc}"
+        jump expression f"show_{{_sc}}"
     """
         )
     )
