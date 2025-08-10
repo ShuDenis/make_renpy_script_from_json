@@ -132,7 +132,7 @@ screen scene_hall():
                 add Solid('#FFFFFF', xysize (288,26)) alpha 0.12
 
 label show_hall:
-    scene bg/hall_day.png with Fade(0.3)
+    scene expression "bg/hall_day.png" with Fade(0.3)
     show screen scene_hall
     show screen scene_tooltip_overlay
     $ renpy.pause(0)
