@@ -267,7 +267,7 @@ def generate_rpy(data: Dict[str, Any]) -> Dict[str, str]:
                 bg_image = L["image"]
                 break
         if bg_image:
-            lbl.append(f"    scene {bg_image} {enter_t}".rstrip())
+            lbl.append(f'    scene expression "{bg_image}" {enter_t}'.rstrip())
         else:
             lbl.append("    # scene has no base image layer")
         lbl.append(f"    show screen scene_{sid}")
