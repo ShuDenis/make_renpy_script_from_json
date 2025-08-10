@@ -110,7 +110,6 @@ def _hotspot_button(
     tooltip: str | None,
     hover: dict | None,
     action_code: str,
-    name: str,
 ) -> str:
     x, y, w, h = rect
     # simple semi-transparent overlay + outline
@@ -236,17 +235,17 @@ def generate_rpy(data: Dict[str, Any]) -> Dict[str, str]:
             act = _action_to_code(h["action"])
             if shape == "rect":
                 rect = _coords_rect(h["rect"], refw, refh, relative)
-                btn = _hotspot_button(rect, tooltip, hover, act, h["id"])
+                btn = _hotspot_button(rect, tooltip, hover, act)
                 lines.append(_indent(btn, 4))
             elif shape == "polygon":
                 # approximate by bounding box + function filter (done inside action is too complex),
                 # we still draw bbox and rely on UX simplicity.
                 rect = _bbox_points(h["points"], refw, refh, relative)
-                btn = _hotspot_button(rect, tooltip, hover, act, h["id"])
+                btn = _hotspot_button(rect, tooltip, hover, act)
                 lines.append(_indent(btn, 4))
             else:  # circle
                 rect = _bbox_circle(h["circle"], refw, refh, relative)
-                btn = _hotspot_button(rect, tooltip, hover, act, h["id"])
+                btn = _hotspot_button(rect, tooltip, hover, act)
                 lines.append(_indent(btn, 4))
         lines.append("")
         # Label to show scene
