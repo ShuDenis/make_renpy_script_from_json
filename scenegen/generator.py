@@ -130,6 +130,7 @@ def _hotspot_button(
             "unhovered SetField(store, 'scene_tooltip', None)"
         )
 
+    hover_text = "\n".join(hover_lines)
     return f"""
     button:
         xpos {x} ypos {y} xsize {w} ysize {h}
@@ -138,7 +139,7 @@ def _hotspot_button(
         action {action_code}
         hovered:
             fixed:
-{_indent("\n".join(hover_lines), 16)}
+{_indent(hover_text, 16)}
     """.rstrip()
 
 def _action_to_code(act: Dict[str, Any]) -> str:
