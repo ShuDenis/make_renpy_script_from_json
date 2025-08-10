@@ -4,27 +4,15 @@ import argparse
 import json
 from pathlib import Path
 
-from scenegen.generator import generate_rpy
-from scenegen.validator import validate
-
-from .converter import convert_file
+from .generators import generate_dialogue, generate_scenes
 
 
-def _convert_dialogue(src: Path, outdir: Path) -> None:
-    """Convert dialogue JSON files into Ren'Py scripts."""
-    if src.is_dir():
-        for json_file in src.glob("*.json"):
-            convert_file(json_file, outdir / f"{json_file.stem}.rpy")
-    else:
-        convert_file(src, outdir / f"{src.stem}.rpy")
+def _process_json(src: Path, outdir: Path, generator) -> None:
+    """Load JSON from ``src`` and write generated files to ``outdir``."""
 
-
-def _generate_scenes(src: Path, outdir: Path) -> None:
-    """Generate Ren'Py scene files from scene JSON."""
-    def _process(json_path: Path) -> None:
+    def _single(json_path: Path) -> None:
         data = json.loads(json_path.read_text(encoding="utf-8"))
-        validate(data)
-        files = generate_rpy(data)
+        files = generator(data)
         for rel, content in files.items():
             target = outdir / rel
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -32,16 +20,16 @@ def _generate_scenes(src: Path, outdir: Path) -> None:
 
     if src.is_dir():
         for json_file in src.glob("*.json"):
-            _process(json_file)
+            _single(json_file)
     else:
-        _process(src)
+        _single(src)
 
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Utilities to generate Ren'Py content from JSON")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    dlg = sub.add_parser("dialogue", help="Convert dialogue JSON to .rpy files")
+    dlg = sub.add_parser("dialogue", help="Generate dialogue scripts from JSON")
     dlg.add_argument("path", nargs="?", type=Path, default=Path("input"), help="JSON file or directory")
     dlg.add_argument("-o", "--output", type=Path, default=Path("output"), help="Output directory")
 
@@ -55,9 +43,9 @@ def main(argv: list[str] | None = None) -> None:
     outdir.mkdir(parents=True, exist_ok=True)
 
     if args.command == "dialogue":
-        _convert_dialogue(args.path, outdir)
+        _process_json(args.path, outdir, generate_dialogue)
     else:
-        _generate_scenes(args.path, outdir)
+        _process_json(args.path, outdir, generate_scenes)
 
 
 if __name__ == "__main__":

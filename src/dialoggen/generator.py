@@ -29,21 +29,22 @@ def _apply_text_tags(text: str, tags: List[str] | None) -> str:
     return "".join(open_parts) + text + "".join(close_parts)
 
 
-def _wrap_text(text: str, tags: List[str] | None = None) -> str:
+def _wrap_text(text: str, tags: List[str] | None = None, localize: bool = True) -> str:
     """Quote ``text`` and wrap it for localisation and tags."""
     text = _apply_text_tags(text, tags)
-    return f"_({_quote(text)})"
+    quoted = _quote(text)
+    return f"_({quoted})" if localize else quoted
 
 
 # Node emitters
 
-def _emit_say(tree_id: str, node: Dict[str, Any], default_char: str) -> List[str]:
+def _emit_say(tree_id: str, node: Dict[str, Any], default_char: str, localize: bool) -> List[str]:
     lines: List[str] = []
     voice = node.get("voice")
     if voice:
         lines.append(f"    voice {_quote(voice)}")
     character = node.get("character") or default_char
-    text = _wrap_text(node["text"], node.get("text_tags"))
+    text = _wrap_text(node["text"], node.get("text_tags"), localize)
     lines.append(f"    {character} {text}")
     nxt = node.get("next")
     if nxt:
@@ -51,17 +52,17 @@ def _emit_say(tree_id: str, node: Dict[str, Any], default_char: str) -> List[str
     return lines
 
 
-def _emit_choice(tree_id: str, node: Dict[str, Any]) -> List[str]:
+def _emit_choice(tree_id: str, node: Dict[str, Any], localize: bool) -> List[str]:
     lines: List[str] = []
     lines.append("    menu:")
     prompt = node.get("prompt")
     if prompt:
-        lines.append(f"        {_wrap_text(prompt)}:")
+        lines.append(f"        {_wrap_text(prompt, localize=localize)}:")
         base = "            "
     else:
         base = "        "
     for ch in node.get("choices", []):
-        line = base + _wrap_text(ch["text"])
+        line = base + _wrap_text(ch["text"], localize=localize)
         conds = ch.get("conditions") or []
         if conds:
             line += " if " + " and ".join(conds)
@@ -129,17 +130,18 @@ _EMITTERS = {
     "choice": _emit_choice,
     "if": _emit_if,
     "script": _emit_script,
-    "jump": lambda tree_id, n, dc=None: _emit_jump(n),
-    "call": lambda tree_id, n, dc=None: _emit_call(n),
-    "return": lambda tree_id, n, dc=None: _emit_return(),
+    "jump": lambda tree_id, n, dc=None, loc=True: _emit_jump(n),
+    "call": lambda tree_id, n, dc=None, loc=True: _emit_call(n),
+    "return": lambda tree_id, n, dc=None, loc=True: _emit_return(),
     "screen": _emit_screen,
 }
 
 
-def generate_rpy(data: Dict[str, Any]) -> Dict[Path, str]:
+def generate_rpy(data: Dict[str, Any]) -> Dict[Path | str, str]:
     """Generate Ren'Py dialogue files from validated ``data``.
 
     Returns a mapping of relative ``Path`` objects to file contents.
+    String keys are included for backwards compatibility.
     """
     files: Dict[Path, str] = {}
 
@@ -148,6 +150,7 @@ def generate_rpy(data: Dict[str, Any]) -> Dict[Path, str]:
 
     project = data.get("project", {})
     default_char = project.get("default_character", "narrator")
+    localize = "language" not in project
 
     for tree in data.get("dialog_trees", []):
         tid = tree["id"]
@@ -165,14 +168,25 @@ def generate_rpy(data: Dict[str, Any]) -> Dict[Path, str]:
             lines.append(f"label dlg_{tid}__{nid}:")
             emitter = _EMITTERS.get(node["type"])
             if emitter:
-                emitted = emitter(tid, node, default_char) if node["type"] == "say" else emitter(tid, node)
+                if node["type"] == "say":
+                    emitted = emitter(tid, node, default_char, localize)
+                elif node["type"] == "choice":
+                    emitted = emitter(tid, node, localize)
+                else:
+                    emitted = emitter(tid, node)
                 lines.extend(emitted)
             else:
                 lines.append(f"    # Unsupported node type: {node['type']}")
             lines.append("")
         content = "\n".join(lines).rstrip() + "\n"
         files[Path(f"_gen/dialogs_{tid}.rpy")] = content
-    return files
+
+    # Provide access via filename strings for compatibility
+    result: Dict[Path | str, str] = {}
+    for path, content in files.items():
+        result[path] = content
+        result[path.name] = content
+    return result
 
 # Backwards-compat: алиас, который ожидала другая ветка
 generate = generate_rpy
