@@ -28,3 +28,15 @@ def test_cli_processes_directory(tmp_path, dialog_project):
     )
     assert result.returncode == 0
     assert (out_dir / "dialogs_day1_intro.rpy").exists()
+
+
+def test_cli_invalid_json_returns_error(tmp_path):
+    src = tmp_path / "bad.json"
+    src.write_text("{", encoding="utf8")
+    out_dir = tmp_path / "out"
+    result = subprocess.run(
+        [sys.executable, "-m", "dialoggen.cli", "--in", str(src), "--out-dir", str(out_dir)],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
