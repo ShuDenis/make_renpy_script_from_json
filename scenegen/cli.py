@@ -22,7 +22,6 @@ def main(argv=None):
     p = argparse.ArgumentParser(prog="scenegen", description="SceneGen: JSON -> Ren'Py scenes generator")
     p.add_argument("--in", dest="infile", required=True, help="Input scenes JSON")
     p.add_argument("--out-dir", dest="outdir", required=True, help="Output directory (Ren'Py /game)")
-    p.add_argument("--fail-on-warning", action="store_true", help="(reserved)")
     args = p.parse_args(argv)
 
     log_file = _setup_logging()

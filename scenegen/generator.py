@@ -28,6 +28,7 @@ def _transition_code(t: Dict[str, Any] | None) -> str:
     if not t:
         return ""
     ttype = t.get("type", "dissolve")
+    ttype = ttype.lower()
     dur = t.get("duration", 0.2)
     # map a few common names
     mapping = {
@@ -110,7 +111,6 @@ def _hotspot_button(
     tooltip: str | None,
     hover: dict | None,
     action_code: str,
-    name: str,
 ) -> str:
     x, y, w, h = rect
     # simple semi-transparent overlay + outline
@@ -131,6 +131,7 @@ def _hotspot_button(
             "unhovered SetField(store, 'scene_tooltip', None)"
         )
 
+    hover_block = _indent("\n".join(hover_lines), 16)
     return f"""
     button:
         xpos {x} ypos {y} xsize {w} ysize {h}
@@ -139,7 +140,7 @@ def _hotspot_button(
         action {action_code}
         hovered:
             fixed:
-{_indent("\n".join(hover_lines), 16)}
+{hover_block}
     """.rstrip()
 
 def _action_to_code(act: Dict[str, Any]) -> str:
@@ -207,7 +208,7 @@ def generate_rpy(data: Dict[str, Any]) -> Dict[str, str]:
             return
         $ _sc = _next_scene
         $ _next_scene = None
-        jump expression f"show_{_sc}"
+        jump expression f"show_{{_sc}}"
     """
         )
     )
@@ -236,17 +237,17 @@ def generate_rpy(data: Dict[str, Any]) -> Dict[str, str]:
             act = _action_to_code(h["action"])
             if shape == "rect":
                 rect = _coords_rect(h["rect"], refw, refh, relative)
-                btn = _hotspot_button(rect, tooltip, hover, act, h["id"])
+                btn = _hotspot_button(rect, tooltip, hover, act)
                 lines.append(_indent(btn, 4))
             elif shape == "polygon":
                 # approximate by bounding box + function filter (done inside action is too complex),
                 # we still draw bbox and rely on UX simplicity.
                 rect = _bbox_points(h["points"], refw, refh, relative)
-                btn = _hotspot_button(rect, tooltip, hover, act, h["id"])
+                btn = _hotspot_button(rect, tooltip, hover, act)
                 lines.append(_indent(btn, 4))
             else:  # circle
                 rect = _bbox_circle(h["circle"], refw, refh, relative)
-                btn = _hotspot_button(rect, tooltip, hover, act, h["id"])
+                btn = _hotspot_button(rect, tooltip, hover, act)
                 lines.append(_indent(btn, 4))
         lines.append("")
         # Label to show scene
