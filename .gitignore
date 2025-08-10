@@ -1,9 +1,12 @@
-*.pyc
+
 __pycache__/
+*.pyc
+
 
 .venv/
 
 # Session logs
 logs/*
 !logs/.gitkeep
+
 
